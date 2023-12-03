@@ -82,10 +82,6 @@ func (c *Condition) Solve() int{
 		for j := 0; j < len(c.tables[i].rows); j++{
 			c.tables[i].rows[j].SolveB()
 		}
-		// for _, r := range c.tables[i].rows{
-		// 	r.SolveB()
-		// 	fmt.Println(r.B_n)
-		// }
 	}
 
 	return max
@@ -93,10 +89,6 @@ func (c *Condition) Solve() int{
 
 func (c * Condition) PrintTables(){
 	for i, tabl := range c.tables{
-		// fmt.Println("==================================================================")
-		// fmt.Printf("                                 T%d\n", i + 1)
-		// fmt.Println("==================================================================")
-
 		tab := table.NewWriter()
 		tab.SetTitle(fmt.Sprintf("T%d\n", i + 1))
 		tab.Style().Format.Header = text.FormatTitle
@@ -105,7 +97,6 @@ func (c * Condition) PrintTables(){
 		for _, r := range tabl.rows{
 			for k := 0; k < len(r.u_n); k++{
 				if k == 0{
-					//tab.AppendRow(table.Row{r.x_past, r.u_n[k], r.x_n[k], r.z_n[k], r.B_n[k], r.B_z[k], r.B_past})
 					tab.AppendRow(table.Row{r.x_past, r.u_n[k], r.x_n[k], r.z_n[k], r.B_n[k], r.B_z[k], r.B_past})
 					continue
 				}
