@@ -2,6 +2,7 @@ package invest
 
 import (
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -48,7 +49,7 @@ func (c *Condition) Input() {
 		})
 	}
 
-	for i := 0; i < c.deposit; i++{
+	for i := 0; i <= c.deposit; i++{
 		//temp_arr := []int{}
 		for j := 0; j < c.num_of_companies; j++{
 			var new_price int
@@ -91,6 +92,13 @@ func (c * Condition) Solve() int{
 }
 
 func (c * Condition) PrintTables(){
+	//os.RemoveAll("../bin/answers/")
+	f, err := os.OpenFile("bin/answers/invest_answer.txt", os.O_RDWR | os.O_CREATE | os.O_TRUNC, os.ModePerm)
+	if err != nil{
+		panic(err)
+	}
+	defer f.Close()
+	
 	for i, tabl := range c.tables{
 		tab := table.NewWriter()
 		tab.SetTitle(fmt.Sprintf("T%d\n", i + 1))
@@ -109,6 +117,35 @@ func (c * Condition) PrintTables(){
 
 		}
 		fmt.Println(tab.Render())
+		fmt.Fprintf(f, "%s\n", tab.Render())
+	}
+}
+
+func (c *Condition) FPrintTables(){
+	f, err := os.OpenFile("../bin/answer.txt", os.O_CREATE | os.O_RDWR, os.ModeAppend)
+	if err != nil{
+		panic(err)
+	}
+	
+	for i, tabl := range c.tables{
+		tab := table.NewWriter()
+		tab.SetTitle(fmt.Sprintf("T%d\n", i + 1))
+		tab.Style().Format.Header = text.FormatTitle
+		tab.AppendHeader(table.Row{fmt.Sprintf("x%d", i), fmt.Sprintf("u%d", i + 1), fmt.Sprintf("x%d", i + 1), fmt.Sprintf("z%d", i + 1), fmt.Sprintf("B%d(x%d)", i + 1, i + 1), fmt.Sprintf("z%d + B%d", i + 1, i + 1), fmt.Sprintf("B%d(x%d)", i, i)})
+		
+		for _, r := range tabl.rows{
+			for k := 0; k < len(r.u_n); k++{
+				if k == 0{
+					tab.AppendRow(table.Row{r.x_past, r.u_n[k], r.x_n[k], r.z_n[k], r.B_n[k], r.B_z[k], r.B_past})
+					continue
+				}
+				tab.AppendRow(table.Row{" ", r.u_n[k], r.x_n[k], r.z_n[k], r.B_n[k], r.B_z[k], " "})
+
+			}
+
+		}
+		fmt.Println(tab.Render())
+		fmt.Fprintf(f, "%s\n", tab.Render())
 	}
 }
 
@@ -137,7 +174,7 @@ func (t *Table_row) SolveByMax(max int, prices []int, isLast bool) {
 		if u_temp == 0 {
 			z_temp = 0
 		} else {
-			z_temp = prices[u_temp - 1]
+			z_temp = prices[u_temp]
 		}
 		t.x_n = append(t.x_n, x_temp)
 		t.u_n = append(t.u_n, u_temp)
@@ -149,7 +186,7 @@ func (t *Table_row) SolveByMax(max int, prices []int, isLast bool) {
 	i := 0
 	u_temp := 0
 	x_temp := t.x_past
-	z_temp := 0
+	z_temp := prices[u_temp]
 	t.x_n = append(t.x_n, x_temp)
 	t.u_n = append(t.u_n, 0)
 	t.z_n = append(t.z_n, 0)
@@ -158,7 +195,7 @@ func (t *Table_row) SolveByMax(max int, prices []int, isLast bool) {
 	for x_temp + 1 <= max{
 		u_temp++
 		x_temp += 1
-		z_temp = prices[i]
+		z_temp = prices[u_temp]
 		t.x_n = append(t.x_n, x_temp)
 		t.u_n = append(t.u_n, u_temp)
 		t.z_n = append(t.z_n, z_temp)

@@ -2,6 +2,7 @@ package backpack
 
 import (
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -88,6 +89,11 @@ func (c *Condition) Solve() int{
 }
 
 func (c * Condition) PrintTables(){
+	f, err := os.OpenFile("bin/answers/backpack_answer.txt", os.O_RDWR | os.O_CREATE | os.O_TRUNC, os.ModePerm)
+	if err != nil{
+		panic(err)
+	}
+	defer f.Close()
 	for i, tabl := range c.tables{
 		tab := table.NewWriter()
 		tab.SetTitle(fmt.Sprintf("T%d\n", i + 1))
@@ -106,6 +112,7 @@ func (c * Condition) PrintTables(){
 
 		}
 		fmt.Println(tab.Render())
+		fmt.Fprintf(f, "%s\n", tab.Render())
 	}
 }
 
