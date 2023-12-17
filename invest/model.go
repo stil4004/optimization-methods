@@ -52,6 +52,7 @@ func (c *Condition) Input() {
 	for i := 0; i <= c.deposit; i++{
 		//temp_arr := []int{}
 		for j := 0; j < c.num_of_companies; j++{
+			fmt.Printf("Input profit for %d company to %d deposit: \n", j + 1, i)
 			var new_price int
 			fmt.Scan(&new_price)
 			c.Companies[j].prices = append(c.Companies[j].prices, new_price)	
