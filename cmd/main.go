@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Opt/backpack"
+	"Opt/invest"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,9 +10,15 @@ import (
 
 func main() {
 
-	// Creating the condition
-	var cond backpack.Condition
-	cond.CreateCondition()
+	// // Creating the condition for backpack
+	// var cond backpack.Condition
+	// cond.CreateCondition()
+	// cond.Solve()
+	// cond.PrintTables()
+
+	// Creating the condition for inveest
+	var cond invest.Condition
+	cond.Input()
 	cond.Solve()
 	cond.PrintTables()
 

@@ -1,4 +1,4 @@
-package backpack
+package invest
 
 import (
 	"fmt"
@@ -8,9 +8,19 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 )
 
+type Condition struct {
+	deposit, num_of_companies int
+	Companies                 []Company
+	tables                    []Table
+}
+
+type Company struct{
+	prices []int
+}
+
 type Table struct {
 	x_arr []int
-	rows []Table_row
+	rows  []Table_row
 	
 }
 
@@ -24,54 +34,47 @@ type Table_row struct{
 	B_past int
 }
 
-// For conditions
-type Condition struct {
-	max_weight int `json:"max_weight"`
-	t_parts    []T_part `json:"t"`
-	columns_num  int `json: "columns_num"`
-	tables []Table
-}
+func (c *Condition) Input() {
 
-type T_part struct {
-	m     int
-	r     int
-	index int
-}
+	fmt.Println("Enter deposite: ")
+	fmt.Scan(&c.deposit)
 
-func (c *Condition) CreateCondition() {
+	fmt.Println("Enter number of companies")
+	fmt.Scan(&c.num_of_companies)
 
-	// Insering number of T columns
-	fmt.Println("Enter number of T")
-	n := 0
-	fmt.Scan(&n)
-	c.columns_num = n
-
-	// Inserting m and r into T tables
-	c.t_parts = make([]T_part, n)
-	for i := 1; i <= n; i++ {
-		var m, r int
-		fmt.Printf("Enter m and r for T%d\n", i)
-		fmt.Scan(&m, &r)
-		c.t_parts[i - 1] = T_part{m, r, i}
+	for j := 0; j < c.num_of_companies; j++{
+		c.Companies = append(c.Companies, Company{
+			prices: []int{},
+		})
 	}
-	
-	fmt.Println("Enter max weight: ")
-	fmt.Scan(&c.max_weight)
+
+	for i := 0; i < c.deposit; i++{
+		//temp_arr := []int{}
+		for j := 0; j < c.num_of_companies; j++{
+			var new_price int
+			fmt.Scan(&new_price)
+			c.Companies[j].prices = append(c.Companies[j].prices, new_price)	
+		}
+	}
+	fmt.Println(c)
 }
 
-
-// Condition functions
-func (c *Condition) Solve() int{
+func (c * Condition) Solve() int{
 	max := 0
-	c.tables = make([]Table, c.columns_num)
+	c.tables = make([]Table, c.num_of_companies)
 
 	x_next := []int{ 0 }
+	isLast := false
 
-	for i := 0; i < c.columns_num; i++{
+	for i := 0; i < c.num_of_companies; i++{
 		c.tables[i] = Table{
 			x_arr: x_next,
 		}
-		x_next = c.tables[i].SolveX(c.max_weight, c.t_parts[i])
+
+		if i == c.num_of_companies - 1{
+			isLast = true
+		}
+		x_next = c.tables[i].SolveX(c.deposit, c.Companies[i], isLast)
 		x_next = removeDuplicate[int](x_next)
 		sort.Slice(x_next, func(i, j int) bool {
 			return x_next[i] < x_next[j]
@@ -109,9 +112,7 @@ func (c * Condition) PrintTables(){
 	}
 }
 
-
-// Table functions
-func (t *Table) SolveX(max_weight int, t_cond T_part) []int{
+func (t *Table) SolveX(max int, comp Company, isLast bool) []int {
 
 	ans := []int{}
 
@@ -119,19 +120,33 @@ func (t *Table) SolveX(max_weight int, t_cond T_part) []int{
 	
 	for i, tab := range t.x_arr{
 		t.rows[i].x_past = tab
-		t.rows[i].SolveByMax(max_weight, t_cond.m, t_cond.r)
+		t.rows[i].SolveByMax(max, comp.prices, isLast)
 		ans = append(ans, t.rows[i].x_n...)
 	}
 
 	return ans
+
 }
 
-
-
 // Table row functions
-func (t *Table_row) SolveByMax(max, weight_step, price_step int) {
+func (t *Table_row) SolveByMax(max int, prices []int, isLast bool) {
+	if isLast{
+		u_temp := max - t.x_past
+		x_temp := max
+		z_temp := 0
+		if u_temp == 0 {
+			z_temp = 0
+		} else {
+			z_temp = prices[u_temp - 1]
+		}
+		t.x_n = append(t.x_n, x_temp)
+		t.u_n = append(t.u_n, u_temp)
+		t.z_n = append(t.z_n, z_temp)
+		return
+	}
 
 	// First row of every string is zeros
+	i := 0
 	u_temp := 0
 	x_temp := t.x_past
 	z_temp := 0
@@ -140,19 +155,18 @@ func (t *Table_row) SolveByMax(max, weight_step, price_step int) {
 	t.z_n = append(t.z_n, 0)
 
 	// Running while row's x lower then max
-	for x_temp + weight_step <= max{
+	for x_temp + 1 <= max{
 		u_temp++
-		x_temp += weight_step
-		z_temp += price_step
+		x_temp += 1
+		z_temp = prices[i]
 		t.x_n = append(t.x_n, x_temp)
 		t.u_n = append(t.u_n, u_temp)
 		t.z_n = append(t.z_n, z_temp)
+		i++
 	}
 }
 
-
 var B_x map[int]int = make(map[int]int)
-
 
 func (t * Table_row) SolveB(){
 	b_n_temp := 0
@@ -168,7 +182,7 @@ func (t * Table_row) SolveB(){
 				max_bz = b_z_temp
 			}
 
-			delete(B_x, t.x_n[i])
+			//delete(B_x, t.x_n[i])
 			
 			continue
 		}
@@ -183,9 +197,8 @@ func (t * Table_row) SolveB(){
 	}
 	t.B_past = max_bz
 	B_x[t.x_past] = max_bz
-	
-}
 
+}
 
 // Helpfull functions
 func removeDuplicate[T string | int](sliceList []T) []T {
