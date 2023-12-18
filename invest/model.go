@@ -172,11 +172,11 @@ func (t *Table_row) SolveByMax(max int, prices []int, isLast bool) {
 		u_temp := max - t.x_past
 		x_temp := max
 		z_temp := 0
-		if u_temp == 0 {
-			z_temp = 0
-		} else {
-			z_temp = prices[u_temp]
-		}
+		//if u_temp == 0 {
+		//	z_temp = 0
+		//} else {
+		z_temp = prices[u_temp]
+		//}
 		t.x_n = append(t.x_n, x_temp)
 		t.u_n = append(t.u_n, u_temp)
 		t.z_n = append(t.z_n, z_temp)
@@ -190,7 +190,7 @@ func (t *Table_row) SolveByMax(max int, prices []int, isLast bool) {
 	z_temp := prices[u_temp]
 	t.x_n = append(t.x_n, x_temp)
 	t.u_n = append(t.u_n, 0)
-	t.z_n = append(t.z_n, 0)
+	t.z_n = append(t.z_n, z_temp)
 
 	// Running while row's x lower then max
 	for x_temp + 1 <= max{
@@ -209,7 +209,7 @@ var B_x map[int]int = make(map[int]int)
 func (t * Table_row) SolveB(){
 	b_n_temp := 0
 	b_z_temp := 0
-	max_bz := 0
+	max_bz := -10000
 	for i := 0; i < len(t.x_n); i++{
 		if a, found := B_x[t.x_n[i]]; found{
 			b_n_temp = a
